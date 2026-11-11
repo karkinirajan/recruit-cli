@@ -15,7 +15,7 @@ import httpx
 from notion_client import Client
 from notion_client.errors import NotionClientErrorBase
 
-from ai_recruitment_agent.candidate import (
+from recruit_cli.candidate import (
     NOT_AVAILABLE,
     NOTION_OPTION_LIMIT,
     Candidate,

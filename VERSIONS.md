@@ -7,7 +7,7 @@ and Notion's API documentation on that day; nothing is quoted from memory.
 
 | | Version | Notes |
 |---|---|---|
-| Python | **3.14** (`.python-version`); `requires-python >=3.11` | It was `>=3.10`, which reached end of life in October 2026, and the README said 3.8. CI runs 3.11 and 3.14. |
+| Python | **3.14** (`.python-version`); `requires-python >=3.11` | It was `>=3.10`, which reached end of life in October 2026, and the README said 3.8. CI runs 3.11, 3.12, 3.13 and 3.14. |
 | uv | 0.13.7 | Installs and locks everything. |
 
 ## Application
@@ -44,7 +44,8 @@ because Google retires models regularly. **It was not run against the live API**
 
 - Every package at its latest release; `uv audit` reports no known vulnerabilities.
 - Packaging: `[dependency-groups]` instead of `[project.optional-dependencies]` for the tools, a ruff configuration, `requires-python >=3.11`; the classifiers drop 3.10 and add 3.14.
-- The CI actions are `actions/checkout@v7` (latest at the time of writing).
+- The CI actions are `actions/checkout@v7` (latest at the time of writing). The release workflow (added in 0.4.0) uses `actions/upload-artifact@v7`
+  and `actions/download-artifact@v8`, the latest releases on 2026-11-11.
 
 ## Left alone
 

@@ -1,4 +1,4 @@
-"""The `ai-recruit` command line."""
+"""The `recruit-cli` command line."""
 
 from pathlib import Path
 from typing import Annotated
@@ -18,22 +18,22 @@ from rich.progress import (
 from rich.table import Table
 from rich.text import Text
 
-from ai_recruitment_agent import __version__
-from ai_recruitment_agent.extract import (
+from recruit_cli import __version__
+from recruit_cli.extract import (
     SUPPORTED_CV_FORMATS,
     ExtractionError,
     extract_text,
     extract_text_from_pdf,
 )
-from ai_recruitment_agent.gemini import GeminiAPIError, GeminiResponseError, Screener
-from ai_recruitment_agent.notion_io import (
+from recruit_cli.gemini import GeminiAPIError, GeminiResponseError, Screener
+from recruit_cli.notion_io import (
     NotionError,
     create_candidate_page,
     ensure_properties,
     find_duplicate,
     resolve_data_source,
 )
-from ai_recruitment_agent.settings import Settings
+from recruit_cli.settings import Settings
 
 console = Console()
 
@@ -54,7 +54,7 @@ def say(markup: str) -> None:
 
 def _version_callback(value: bool) -> None:
     if value:
-        typer.echo(f"ai-recruitment-agent v{__version__}")
+        typer.echo(f"recruit-cli v{__version__}")
         raise typer.Exit()
 
 
@@ -70,17 +70,17 @@ def main_callback(
     if ctx.invoked_subcommand is None:
         console.print(
             Panel(
-                "[bold cyan]AI Recruitment Scanning Agent[/bold cyan]\n\n"
+                "[bold cyan]recruit-cli[/bold cyan] — AI CV screening\n\n"
                 "Screens CVs against a Job Description using [bold]Google Gemini[/bold]\n"
                 "and pushes ranked candidates into a [bold]Notion database[/bold].",
-                title="[bold]ai-recruit[/bold]",
+                title="[bold]recruit-cli[/bold]",
                 border_style="cyan",
                 padding=(1, 2),
             )
         )
         say("[bold]Usage:[/bold]")
         say(
-            "  ai-recruit process [green]<CV_FOLDER>[/green] [green]<JD_PDF>[/green] "
+            "  recruit-cli process [green]<CV_FOLDER>[/green] [green]<JD_PDF>[/green] "
             "[[yellow]--notion-db-id[/yellow] [yellow]<DB_ID>[/yellow]]\n"
         )
         say("[bold]Configure via .env:[/bold]")
@@ -89,7 +89,7 @@ def main_callback(
         say("  DEFAULT_NOTION_DB_ID=...")
         say("  GEMINI_MODEL=...            [dim](optional)[/dim]")
         say("  NOTION_DATA_SOURCE_ID=...   [dim](only for a database with several data sources)[/dim]\n")
-        say("Run [cyan]ai-recruit process --help[/cyan] for full usage details.")
+        say("Run [cyan]recruit-cli process --help[/cyan] for full usage details.")
 
 
 @app.command(name="process", help="Screen CVs in a folder against a Job Description PDF.")
@@ -102,6 +102,7 @@ def process_documents(
             dir_okay=True,
             readable=True,
             resolve_path=True,
+            metavar="CV_FOLDER",
             help="Folder containing CV files (.pdf / .docx).",
         ),
     ],
@@ -113,6 +114,7 @@ def process_documents(
             dir_okay=False,
             readable=True,
             resolve_path=True,
+            metavar="JD_PDF",
             help="Job Description PDF file.",
         ),
     ],
@@ -340,11 +342,17 @@ def setup_notion(
             failed = True
             say(f"  [yellow]⚠[/yellow]  Could not rename the title property '{escape(name)}': rename it to 'Candidate Name' in Notion by hand.")
     say(
-        "\n[bold green]Notion database is ready.[/bold green] Run [cyan]ai-recruit process[/cyan] to start screening CVs."
+        "\n[bold green]Notion database is ready.[/bold green] Run [cyan]recruit-cli process[/cyan] to start screening CVs."
         if not failed
         else "\n[yellow]Notion database needs one manual step (above) before screening.[/yellow]"
     )
 
 
+def deprecated_alias() -> None:
+    """Entry point of the old `ai-recruit` command: warn on stderr (stdout stays clean for scripts), then run as usual."""
+    typer.echo("Note: `ai-recruit` is deprecated and will be removed in 0.5.0; use `recruit-cli` instead.", err=True)
+    app(prog_name="recruit-cli")
+
+
 if __name__ == "__main__":
-    app()
+    app(prog_name="recruit-cli")

@@ -4,24 +4,35 @@ on:
   push:
     branches: [master, main]
   pull_request:
+  workflow_call:  # release.yml runs the same gates before publishing
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   python:
     name: Python ${{ matrix.python }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        # 3.11 is the oldest supported (pyproject "requires-python"); 3.14 is what .python-version pins.
-        python: ['3.11', '3.14']
+        # Every version in the pyproject classifiers: 3.11 (oldest, "requires-python") to 3.14 (what .python-version pins).
+        python: ['3.11', '3.12', '3.13', '3.14']
+    env:
+      # Applies to every uv command. Without it `uv run` re-synced the venv to .python-version (3.14), so the "3.11" job silently tested 3.14.
+      UV_PYTHON: ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
         run: pipx install uv
-      - run: uv sync --locked --python ${{ matrix.python }}
+      - run: uv sync --locked
+      - name: The job runs the Python it claims to
+        run: uv run python -c "import sys; v = '%d.%d' % sys.version_info[:2]; assert v == '${{ matrix.python }}', v; print(sys.version)"
       - name: Lint
         run: uv run ruff check .
       - name: Tests
@@ -29,6 +40,9 @@ jobs:
       - name: Dependency audit
         if: matrix.python == '3.14'
         run: uv audit --preview-features audit-command
-      - name: The package builds
+      - name: The package builds and installs
         if: matrix.python == '3.14'
-        run: uv build
+        run: |
+          uv build
+          uv run --isolated --no-project --with dist/*.whl recruit-cli --version
+          uv run --isolated --no-project --with dist/*.whl ai-recruit --version

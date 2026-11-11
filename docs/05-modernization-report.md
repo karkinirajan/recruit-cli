@@ -1,11 +1,13 @@
-# Work done
+# 05. Modernization report (0.3.2)
 
-What this repository was, what was changed, and what still needs a person. Branch: `chore/modernize` (local, nothing pushed).
-Start point: `4a4d553`.
+> **Historical record.** This is the report of the 2026-11-10 modernization pass (branch `chore/modernize`, start point `4a4d553`, merged as PR #1).
+> Paths and names were updated for the 0.4.0 rename to `recruit-cli`; everything else describes the tree as it was then. Later changes: [CHANGELOG.md](../CHANGELOG.md).
+
+What this repository was, what was changed, and what still needed a person at the time.
 
 ## At a glance
 
-- **Was:** a 640-line CLI (published on PyPI as `ai-recruitment-agent` 0.3.2) that reads a folder of CVs and a job description, asks Google Gemini to score each CV and writes
+- **Was:** a 640-line CLI (published on PyPI, under the project's previous name, as 0.3.2) that reads a folder of CVs and a job description, asks Google Gemini to score each CV and writes
   one page per candidate into a Notion database. It had 44 tests and no lockfile (`requirements.txt` listed bare names). On the **current dependencies it did not work**:
   it named `gemini-1.5-flash`, which Google has retired, so every CV failed with a warning while the command printed "Done" and exited 0; `notion-client` 3 (Notion API
   2025-09-03) has no `databases.query`, so **duplicate detection silently did nothing** (the error was caught and read as "not a duplicate") and `setup-notion` saw no properties; and
@@ -30,7 +32,7 @@ Run on the final tree, 2026-11-10:
 | Coverage | temporary `pytest-cov` | 100% of statements (481) and branches (122) |
 | Mutation | `tests/mutation/mutate.py` | 253 of 253 killed, on a green baseline (a first run left 25 survivors: 18 missing assertions added, 7 redundant pieces of code simplified) |
 | Audit | `uv audit` | no known vulnerabilities in 50 packages |
-| Build | `uv build` | sdist and wheel build; the wheel holds the seven modules and the `ai-recruit` entry point; `Requires-Python >=3.11`; `rich` is now a declared dependency |
+| Build | `uv build` | sdist and wheel build; the wheel holds the seven modules and the console-script entry point; `Requires-Python >=3.11`; `rich` is now a declared dependency |
 | Secrets | pattern scan of the tree and all 10 commits | none found (counts only; the one pattern hit in history is a line of code that names an environment variable; `.env*` files were not read: `.env.example` is tracked, as a template) |
 | Formatting | | no formatter is configured |
 
@@ -61,7 +63,7 @@ Details: [docs/02-security.md](docs/02-security.md).
 
 | File | Was | Now |
 |---|---|---|
-| `ai_recruitment_agent/main.py` (638 lines) | everything | the two commands, messages and exit codes (330 lines) |
+| `recruit_cli/main.py` (638 lines) | everything | the two commands, messages and exit codes (330 lines) |
 | `settings.py` (new) | module-level `os.getenv` after an import-time `load_dotenv()` | `Settings.load()`, the model setting |
 | `extract.py` (new) | text extraction that printed and returned `None` | raises `ExtractionError` with a reason; size, page and unpacked-size limits |
 | `gemini.py` (new) | prompt strings and a call that returned `None` on any error | fenced prompts; `GeminiAPIError` vs `GeminiResponseError`; `Screener` |

@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from ai_recruitment_agent.candidate import (
+from recruit_cli.candidate import (
     MAX_SKILLS,
     NOTION_TEXT_LIMIT,
     category_for,

@@ -2,12 +2,12 @@
 # Run from the repo root:  python3 tests/mutation/mutate.py tests/mutation/mutants.py -- uv run pytest -x -q
 # (the driver checks the suite is green first; do not edit the tree while it runs; each pattern must occur exactly once)
 
-CA = "ai_recruitment_agent/candidate.py"
-EX = "ai_recruitment_agent/extract.py"
-GE = "ai_recruitment_agent/gemini.py"
-NO = "ai_recruitment_agent/notion_io.py"
-SE = "ai_recruitment_agent/settings.py"
-MA = "ai_recruitment_agent/main.py"
+CA = "recruit_cli/candidate.py"
+EX = "recruit_cli/extract.py"
+GE = "recruit_cli/gemini.py"
+NO = "recruit_cli/notion_io.py"
+SE = "recruit_cli/settings.py"
+MA = "recruit_cli/main.py"
 
 M = [
  # --- candidate: cleaning what the model says
@@ -258,8 +258,8 @@ M = [
  ("cli: the model setting is ignored", MA, "screener = Screener(settings.gemini_api_key, settings.gemini_model)", 'screener = Screener(settings.gemini_api_key, "gemini-x")'),
  ("cli: the notion key is not used", MA, "notion = NotionClient(auth=settings.notion_api_key)\n    try:\n        source = resolve_data_source(notion, database_id or \"\", data_source_id)\n    except NotionError as exc:\n        say(f\"[bold red]✗ Notion initialization", "notion = NotionClient(auth=\"\")\n    try:\n        source = resolve_data_source(notion, database_id or \"\", data_source_id)\n    except NotionError as exc:\n        say(f\"[bold red]✗ Notion initialization"),
  ("cli: the data source id is not passed", MA, "        source = resolve_data_source(notion, database_id or \"\", data_source_id)\n    except NotionError as exc:\n        say(f\"[bold red]✗ Notion initialization", "        source = resolve_data_source(notion, database_id or \"\", None)\n    except NotionError as exc:\n        say(f\"[bold red]✗ Notion initialization"),
- ("cli: the version flag", MA, '        typer.echo(f"ai-recruitment-agent v{__version__}")', '        typer.echo(f"ai-recruitment-agent {__version__}")'),
- ("cli: the version does not exit", MA, '        typer.echo(f"ai-recruitment-agent v{__version__}")\n        raise typer.Exit()', '        typer.echo(f"ai-recruitment-agent v{__version__}")'),
+ ("cli: the version flag", MA, '        typer.echo(f"recruit-cli v{__version__}")', '        typer.echo(f"recruit-cli {__version__}")'),
+ ("cli: the version does not exit", MA, '        typer.echo(f"recruit-cli v{__version__}")\n        raise typer.Exit()', '        typer.echo(f"recruit-cli v{__version__}")'),
  ("cli: the banner shows with a command", MA, "    if ctx.invoked_subcommand is None:", "    if True:"),
  ("cli: setup needs no key", MA, '    errors: list[str] = []\n    if not settings.notion_api_key:\n        errors.append("NOTION_API_KEY not found")\n    database_id = notion_db_id or', '    errors: list[str] = []\n    database_id = notion_db_id or'),
  ("cli: setup failures exit 0", MA, "        say(f\"[bold red]✗ Notion setup failed:[/bold red] {escape(str(exc))}\")\n        raise typer.Exit(code=1) from exc", "        say(f\"[bold red]✗ Notion setup failed:[/bold red] {escape(str(exc))}\")\n        raise typer.Exit(code=0) from exc"),

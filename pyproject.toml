@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ai-recruitment-agent"
-version = "0.3.2"
+name = "recruit-cli"
+dynamic = ["version"]  # single source: recruit_cli/__init__.py (see [tool.hatch.version])
 description = "AI-powered CV screening CLI — ranks candidates against a Job Description using Google Gemini and pushes results to Notion"
 readme = "README.md"
 license = { text = "MIT" }
@@ -42,25 +42,30 @@ dev = [
 ]
 
 [project.scripts]
-ai-recruit = "ai_recruitment_agent.main:app"
+recruit-cli = "recruit_cli.main:app"
+# Deprecated alias kept for one release cycle so existing scripts keep working; prints a notice on stderr.
+ai-recruit = "recruit_cli.main:deprecated_alias"
 
 [project.urls]
-Homepage = "https://github.com/kneeraazon404/ai-recruitment-cli-agent"
-Repository = "https://github.com/kneeraazon404/ai-recruitment-cli-agent"
-Issues = "https://github.com/kneeraazon404/ai-recruitment-cli-agent/issues"
-Changelog = "https://github.com/kneeraazon404/ai-recruitment-cli-agent/releases"
+Homepage = "https://github.com/karkinirajan/recruit-cli"
+Repository = "https://github.com/karkinirajan/recruit-cli"
+Issues = "https://github.com/karkinirajan/recruit-cli/issues"
+Changelog = "https://github.com/karkinirajan/recruit-cli/blob/master/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "recruit_cli/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["ai_recruitment_agent"]
+packages = ["recruit_cli"]
 
+# An allowlist, not an exclude list: a local build otherwise sweeps in any untracked file in the folder (.env, CVs, tool logs).
 [tool.hatch.build.targets.sdist]
-exclude = [
-    "/.github",
-    "/tests",
-    "/cvs",
-    "/jds",
-    "/.env*",
-    "/main.py",
+include = [
+    "/recruit_cli",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/pyproject.toml",
 ]
 
 [tool.pytest.ini_options]

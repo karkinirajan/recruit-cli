@@ -4,10 +4,10 @@
 
 | Command | Does |
 |---|---|
-| `pip install ai-recruitment-agent` | Install the published package |
-| `ai-recruit setup-notion` | One time: share the database with the integration first, then add the properties |
-| `ai-recruit process CVS/ JD.pdf` | Screen a folder; exit code 1 if any CV failed |
-| `uv sync && uv run ai-recruit ...` | Run from a checkout |
+| `pipx install recruit-cli` (or `uv tool install`, `pip install`) | Install the published package |
+| `recruit-cli setup-notion` | One time: share the database with the integration first, then add the properties |
+| `recruit-cli process CVS/ JD.pdf` | Screen a folder; exit code 1 if any CV failed |
+| `uv sync && uv run recruit-cli ...` | Run from a checkout |
 
 ## Settings
 
@@ -28,8 +28,14 @@ They are read from the environment and from a `.env` file in the working directo
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every push and pull request, on Python 3.11 and 3.14: lint, tests, and (once, on 3.14) `uv audit` and `uv build`.
+`.github/workflows/ci.yml` runs on every push to `master` and every pull request, on Python 3.11, 3.12, 3.13 and 3.14:
+
+1. `uv sync --locked` (fails if `uv.lock` is stale), then a check that the job really runs the Python it is named after (`UV_PYTHON` is set per job;
+   without it `uv run` switched back to `.python-version`).
+2. `ruff check`, `pytest`.
+3. Once, on 3.14: `uv audit`, `uv build`, and installing the built wheel in a clean environment to run `recruit-cli --version` and `ai-recruit --version`.
 
 ## Releasing
 
-The version is in `pyproject.toml` and `ai_recruitment_agent/__init__.py` (they must match); this pass did not change it or publish anything.
+Push a `vX.Y.Z` tag; `.github/workflows/release.yml` runs CI, checks the tag against `__version__` in `recruit_cli/__init__.py` (the only place the
+version is written), publishes to PyPI with trusted publishing and creates a GitHub release. Setup and step-by-step instructions: [PACKAGE.md](../PACKAGE.md).

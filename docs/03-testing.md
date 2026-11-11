@@ -26,8 +26,19 @@ have hidden. Gemini is faked at `client.models.generate_content`; PDFs and DOCX 
 
 ## Coverage
 
-100% of statements and branches over the package (481 statements, 122 branches; measured with a temporary `pytest-cov`, which is not a dependency); the
-`if __name__` entry of `main.py` is run by a test through `runpy`.
+100% of statements and branches over the package (483 statements, 122 branches, 254 tests, measured 2026-11-11 with a temporary `pytest-cov`, which
+is not a dependency):
+
+```bash
+uv run --with pytest-cov pytest -q --cov=recruit_cli --cov-branch --cov-report=term-missing
+```
+
+The `if __name__` entry of `main.py`, `python -m recruit_cli` (`__main__.py`) and the deprecated `ai-recruit` entry point are each run by a test.
+
+## Colour in CI
+
+Typer forces coloured help when `GITHUB_ACTIONS`, `FORCE_COLOR` or `PY_COLORS` is set, and a colour code can land inside an option name. Tests that
+look for text in the output go through `flat()` in `test_cli.py`, which strips terminal codes. To reproduce CI locally: `GITHUB_ACTIONS=true uv run pytest -q`.
 
 ## Mutation checks
 

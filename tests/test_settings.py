@@ -1,4 +1,4 @@
-from ai_recruitment_agent.settings import DEFAULT_GEMINI_MODEL, Settings
+from recruit_cli.settings import DEFAULT_GEMINI_MODEL, Settings
 
 
 def test_reads_every_setting():

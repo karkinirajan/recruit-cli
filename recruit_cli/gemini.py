@@ -11,7 +11,7 @@ from typing import Any
 from google import genai
 from google.genai import types
 
-from ai_recruitment_agent.candidate import (
+from recruit_cli.candidate import (
     Candidate,
     clean_text,
     normalize_candidate,

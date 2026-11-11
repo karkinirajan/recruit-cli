@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_recruitment_agent import main
+from recruit_cli import main
 from tests.helpers import FakeGeminiClient, FakeNotion, make_docx, make_pdf
 
 

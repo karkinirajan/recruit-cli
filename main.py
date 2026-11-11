@@ -1,4 +1,4 @@
-from ai_recruitment_agent.main import app
+from recruit_cli.main import app
 
 if __name__ == "__main__":
-    app()
+    app(prog_name="recruit-cli")

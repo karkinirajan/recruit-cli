@@ -2,8 +2,8 @@ import zipfile
 
 import pytest
 
-from ai_recruitment_agent import extract
-from ai_recruitment_agent.extract import ExtractionError, extract_text, extract_text_from_docx, extract_text_from_pdf
+from recruit_cli import extract
+from recruit_cli.extract import ExtractionError, extract_text, extract_text_from_docx, extract_text_from_pdf
 from tests.helpers import make_docx, make_pdf
 
 

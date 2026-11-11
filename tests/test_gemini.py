@@ -3,8 +3,8 @@ import json
 import pytest
 from google.genai import types
 
-from ai_recruitment_agent import gemini
-from ai_recruitment_agent.gemini import (
+from recruit_cli import gemini
+from recruit_cli.gemini import (
     CV_CHARS,
     JD_CHARS,
     GeminiAPIError,

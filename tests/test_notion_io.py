@@ -1,8 +1,8 @@
 import pytest
 
-from ai_recruitment_agent import notion_io
-from ai_recruitment_agent.candidate import Candidate
-from ai_recruitment_agent.notion_io import (
+from recruit_cli import notion_io
+from recruit_cli.candidate import Candidate
+from recruit_cli.notion_io import (
     REQUIRED_PROPERTIES,
     NotionError,
     candidate_properties,

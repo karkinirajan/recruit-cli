@@ -4,7 +4,7 @@ A command-line tool: read a job description and a folder of CVs, ask Gemini to s
 candidate into a Notion database.
 
 ```text
-ai-recruit process CVS/ JD.pdf
+recruit-cli process CVS/ JD.pdf
   settings.py    keys and ids from the environment and a .env file in the working directory
   extract.py     PDF / DOCX text (size, page and unpacked-size limits)
   gemini.py      the two prompts (documents fenced as untrusted data) and the one Gemini call
@@ -13,7 +13,9 @@ ai-recruit process CVS/ JD.pdf
   main.py        the typer commands: process, setup-notion; progress, messages, exit codes
 ```
 
-`ai_recruitment_agent.main:app` is the console script (`ai-recruit`); the repository's root `main.py` only re-exports it.
+`recruit_cli.main:app` is the console script (`recruit-cli`); `python -m recruit_cli` (`__main__.py`) and the repository's root `main.py` run the
+same app. The deprecated `ai-recruit` script points at `recruit_cli.main:deprecated_alias`, which prints a notice on stderr and then runs the app
+(removed in 0.5.0). The version is defined once, in `recruit_cli/__init__.py`.
 
 ## One CV, step by step
 

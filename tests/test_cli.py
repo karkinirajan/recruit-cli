@@ -3,8 +3,8 @@ import re
 import pytest
 from typer.testing import CliRunner
 
-from ai_recruitment_agent import __version__, main
-from ai_recruitment_agent.main import app
+from recruit_cli import __version__, main
+from recruit_cli.main import app
 from tests.conftest import JD_JSON, candidate_json
 from tests.helpers import make_docx, make_pdf
 
@@ -16,23 +16,29 @@ def exited(result, code: int) -> bool:
     return result.exit_code == code and (result.exception is None or isinstance(result.exception, SystemExit))
 
 
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+
+
 def flat(output: str) -> str:
-    """Output with each run of whitespace (including line wraps) as one space."""
-    return re.sub(r"\s+", " ", output)
+    """Output without terminal colour codes and with each run of whitespace (including line wraps) as one space.
+
+    Typer forces colour when GITHUB_ACTIONS / FORCE_COLOR / PY_COLORS is set, and a colour code can sit inside an option
+    name (`--notion-db-id` became `-` + `-notion-db-id`), so a plain substring check passed locally and failed in CI."""
+    return re.sub(r"\s+", " ", ANSI_ESCAPE.sub("", output))
 
 
 class TestBasics:
     def test_version(self):
         result = runner.invoke(app, ["--version"])
         assert result.exit_code == 0
-        assert result.output.strip() == f"ai-recruitment-agent v{__version__}"
-        assert runner.invoke(app, ["-V"]).output.strip() == f"ai-recruitment-agent v{__version__}"
+        assert result.output.strip() == f"recruit-cli v{__version__}"
+        assert runner.invoke(app, ["-V"]).output.strip() == f"recruit-cli v{__version__}"
 
     def test_no_arguments_shows_the_banner_and_the_settings(self):
         result = runner.invoke(app, [])
         out = flat(result.output)
         assert result.exit_code == 0
-        for needle in ("AI Recruitment Scanning Agent", "ai-recruit process", "GOOGLE_GEMINI_API_KEY", "NOTION_API_KEY", "DEFAULT_NOTION_DB_ID", "GEMINI_MODEL", "NOTION_DATA_SOURCE_ID"):
+        for needle in ("recruit-cli — AI CV screening", "recruit-cli process", "GOOGLE_GEMINI_API_KEY", "NOTION_API_KEY", "DEFAULT_NOTION_DB_ID", "GEMINI_MODEL", "NOTION_DATA_SOURCE_ID"):
             assert needle in out
 
     def test_help_lists_both_commands(self):
@@ -42,6 +48,10 @@ class TestBasics:
     def test_process_help_mentions_the_options(self):
         out = flat(runner.invoke(app, ["process", "--help"]).output)
         assert "--notion-db-id" in out and "--data-source-id" in out
+        assert "CV_FOLDER" in out and "JD_PDF" in out
+
+    def test_flat_removes_colour_codes(self):
+        assert flat("\x1b[1;36m-\x1b[0m\x1b[1;36m-notion-db-id\x1b[0m\n  x") == "--notion-db-id x"
 
 
 class TestProcessConfiguration:
@@ -379,7 +389,7 @@ class TestSetupNotion:
 
     def test_the_banner_is_only_for_running_without_a_command(self, fake_notion):
         out = flat(runner.invoke(app, ["setup-notion"]).output)
-        assert "AI Recruitment Scanning Agent" not in out
+        assert "AI CV screening" not in out
 
     def test_the_options_override_the_environment(self, configured, fake_notion):
         runner.invoke(app, ["setup-notion", "--notion-db-id", "db-x"])
@@ -400,7 +410,7 @@ def test_the_root_shim_still_exposes_the_app(name):
 
 
 def test_docx_and_pdf_helpers_make_files_the_extractors_can_read(tmp_path):
-    from ai_recruitment_agent.extract import extract_text
+    from recruit_cli.extract import extract_text
 
     assert extract_text(make_docx(tmp_path / "x.docx", ["a"])) == "a"
     assert extract_text(make_pdf(tmp_path / "x.pdf", "b")) == "b"
@@ -410,9 +420,39 @@ def test_the_module_can_be_run_directly(monkeypatch, capsys):
     import runpy
     import sys
 
-    monkeypatch.setattr(sys, "argv", ["ai-recruit", "--version"])
-    monkeypatch.delitem(sys.modules, "ai_recruitment_agent.main", raising=False)
+    monkeypatch.setattr(sys, "argv", ["recruit-cli", "--version"])
+    monkeypatch.delitem(sys.modules, "recruit_cli.main", raising=False)
     with pytest.raises(SystemExit) as exit_info:
-        runpy.run_module("ai_recruitment_agent.main", run_name="__main__")
+        runpy.run_module("recruit_cli.main", run_name="__main__")
     assert exit_info.value.code == 0
-    assert f"ai-recruitment-agent v{__version__}" in capsys.readouterr().out
+    assert f"recruit-cli v{__version__}" in capsys.readouterr().out
+
+
+def test_python_dash_m_runs_the_cli(monkeypatch, capsys):
+    import runpy
+    import sys
+
+    monkeypatch.setattr(sys, "argv", ["recruit_cli", "--version"])
+    monkeypatch.delitem(sys.modules, "recruit_cli.__main__", raising=False)
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_module("recruit_cli", run_name="__main__")
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == f"recruit-cli v{__version__}"
+
+
+def test_the_old_ai_recruit_command_still_works_but_warns_on_stderr(monkeypatch, capsys):
+    import sys
+
+    monkeypatch.setattr(sys, "argv", ["ai-recruit", "--version"])
+    with pytest.raises(SystemExit) as exit_info:
+        main.deprecated_alias()
+    captured = capsys.readouterr()
+    assert exit_info.value.code == 0
+    assert captured.out.strip() == f"recruit-cli v{__version__}"
+    assert "`ai-recruit` is deprecated" in captured.err and "recruit-cli" in captured.err
+
+
+def test_the_installed_version_is_the_package_version():
+    from importlib.metadata import version
+
+    assert version("recruit-cli") == __version__

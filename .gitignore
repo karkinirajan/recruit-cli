@@ -15,9 +15,10 @@ __pycache__/
 .vscode/
 .idea/
 
-# Environment variables
+# Environment variables (the template .env.example is tracked)
 .env
-.env.local
+.env.*
+!.env.example
 
 # Distribution / build
 dist/
@@ -30,6 +31,10 @@ build/
 cvs/
 jds/
 
-# Coverage
+# Coverage and tool caches
 .coverage
 htmlcov/
+.ruff_cache/
+
+# Local assistant/session notes
+.remember/
